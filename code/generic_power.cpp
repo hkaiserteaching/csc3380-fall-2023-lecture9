@@ -30,14 +30,16 @@ concept NoncommutativeAdditiveGroup =
     NoncommutativeAdditiveMonoid<T> && AdditiveIsInvertible<T>;
 
 // the additive identity is zero
-template <NoncommutativeAdditiveMonoid T>
+template <typename T>
+    requires(NoncommutativeAdditiveMonoid<T>)
 T identity_element(std::plus<T>)
 {
     return T(0);
 }
 
 // the additive inverse operation is negate
-template <NoncommutativeAdditiveGroup T>
+template <typename T>
+    requires(NoncommutativeAdditiveGroup<T>)
 auto inverse_operation(std::plus<T>)
 {
     return std::negate<T>();
@@ -65,14 +67,16 @@ concept MultiplicativeGroup =
     MultiplicativeMonoid<T> && MultiplicativeIsInvertible<T>;
 
 // the multiplicative identity is one
-template <MultiplicativeMonoid T>
+template <typename T>
+    requires(MultiplicativeMonoid<T>)
 T identity_element(std::multiplies<T>)
 {
     return T(1);
 }
 
 // the multiplicative inverse is reciprocal
-template <MultiplicativeGroup T>
+template <typename T>
+    requires(MultiplicativeGroup<T>)
 struct reciprocal
 {
     T operator()(T x) const
@@ -81,7 +85,8 @@ struct reciprocal
     }
 };
 
-template <MultiplicativeGroup T>
+template <typename T>
+    requires(MultiplicativeGroup<T>)
 auto inverse_operation(std::multiplies<T>)
 {
     return reciprocal<T>();
@@ -112,20 +117,23 @@ concept MonoidOperation =
 template <typename Op>
 concept GroupOperation = MonoidOperation<Op> && OperationHasInverse<Op>;
 
-template <Integer N>
+template <typename N>
+    requires(Integer<N>)
 bool odd(N n)
 {
     return bool(n & 0x1);
 }
 
-template <Integer N>
+template <typename N>
+    requires(Integer<N>)
 N half(N n)
 {
     return n >> 1;
 }
 
-template <Regular A, Integer N, SemigroupOperation Op>
-    requires(Domain<Op, A>)
+template <typename A, typename N, typename Op>
+    requires(
+        Regular<A> && Integer<N> && SemigroupOperation<Op> && Domain<Op, A>)
 A power_accumulate_semigroup(A r, A a, N n, Op op)
 {
     // precondition: n >= 0
@@ -144,8 +152,9 @@ A power_accumulate_semigroup(A r, A a, N n, Op op)
     }
 }
 
-template <Regular A, Integer N, SemigroupOperation Op>
-    requires(Domain<Op, A>)
+template <typename A, typename N, typename Op>
+    requires(
+        Regular<A> && Integer<N> && SemigroupOperation<Op> && Domain<Op, A>)
 A power_semigroup(A a, N n, Op op)
 {
     // precondition: n > 0
@@ -159,8 +168,8 @@ A power_semigroup(A a, N n, Op op)
     return power_accumulate_semigroup(a, op(a, a), half(n - 1), op);
 }
 
-template <Regular A, Integer N, MonoidOperation Op>
-    requires(Domain<Op, A>)
+template <typename A, typename N, typename Op>
+    requires(Regular<A> && Integer<N> && MonoidOperation<Op> && Domain<Op, A>)
 A power_monoid(A a, N n, Op op)
 {
     // precondition: n >= 0
@@ -169,8 +178,8 @@ A power_monoid(A a, N n, Op op)
     return power_semigroup(a, n, op);
 }
 
-template <Regular A, Integer N, GroupOperation Op>
-    requires(Domain<Op, A>)
+template <typename A, typename N, typename Op>
+    requires(Regular<A> && Integer<N> && GroupOperation<Op> && Domain<Op, A>)
 A power_group(A a, N n, Op op)
 {
     // precondition: none

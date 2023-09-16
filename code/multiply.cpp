@@ -17,27 +17,32 @@ template <typename T>
 concept NoncommutativeAdditiveSemigroup = std::regular<T> && Addable<T>;
 
 template <typename T>
-concept NoncommutativeAdditiveMonoid = NoncommutativeAdditiveSemigroup<T> && HasAdditiveIdentity<T>;
+concept NoncommutativeAdditiveMonoid =
+    NoncommutativeAdditiveSemigroup<T> && HasAdditiveIdentity<T>;
 
 template <typename T>
-concept NoncommutativeAdditiveGroup = NoncommutativeAdditiveMonoid<T> && AdditiveIsInvertible<T>;
+concept NoncommutativeAdditiveGroup =
+    NoncommutativeAdditiveMonoid<T> && AdditiveIsInvertible<T>;
 
 template <typename T>
 concept Integer = std::integral<T>;
 
-template <Integer N>
+template <typename N>
+    requires(Integer<N>)
 bool odd(N n)
 {
     return bool(n & 0x1);
 }
 
-template <Integer N>
+template <typename N>
+    requires(Integer<N>)
 N half(N n)
 {
     return n >> 1;
 }
 
-template <NoncommutativeAdditiveSemigroup A, Integer N>
+template <typename A, typename N>
+    requires(NoncommutativeAdditiveSemigroup<A> && Integer<N>)
 A multiply_accumulate_semigroup(A r, N n, A a)
 {
     // precondition: n >= 0
@@ -56,7 +61,8 @@ A multiply_accumulate_semigroup(A r, N n, A a)
     }
 }
 
-template <NoncommutativeAdditiveSemigroup A, Integer N>
+template <typename A, typename N>
+    requires(NoncommutativeAdditiveSemigroup<A> && Integer<N>)
 A multiply_semigroup(N n, A a)
 {
     // precondition: n > 0
@@ -70,7 +76,8 @@ A multiply_semigroup(N n, A a)
     return multiply_accumulate_semigroup(a, half(n - 1), a + a);
 }
 
-template <NoncommutativeAdditiveMonoid A, Integer N>
+template <typename A, typename N>
+    requires(NoncommutativeAdditiveMonoid<A> && Integer<N>)
 A multiply_monoid(N n, A a)
 {
     // precondition: n >= 0
@@ -79,7 +86,8 @@ A multiply_monoid(N n, A a)
     return multiply_semigroup(n, a);
 }
 
-template <NoncommutativeAdditiveGroup A, Integer N>
+template <typename A, typename N>
+    requires(NoncommutativeAdditiveMonoid<A> && Integer<N>)
 A multiply_group(N n, A a)
 {
     // precondition: none

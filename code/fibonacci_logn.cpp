@@ -65,10 +65,16 @@ A power_semigroup(A a, N n, Op op)
     return power_accumulate_semigroup(a, op(a, a), half(n - 1), op);
 }
 
+template <typename T>
 struct matrix
 {
-    int x11, x12;
-    int x21, x22;
+    T x11, x12;
+    T x21, x22;
+
+    T determinant() const
+    {
+        return x11 * x22 - x12 * x21;
+    }
 
     friend bool operator==(matrix const& lhs, matrix const& rhs)
     {
@@ -79,6 +85,23 @@ struct matrix
     friend bool operator!=(matrix const& lhs, matrix const& rhs)
     {
         return !(lhs == rhs);
+    }
+
+    friend bool operator<(matrix const& lhs, matrix const& rhs)
+    {
+        return lhs.determinant() < rhs.determinant();
+    }
+    friend bool operator>(matrix const& x, matrix const& y)
+    {
+        return y < x;
+    }
+    friend bool operator<=(matrix const& x, matrix const& y)
+    {
+        return !(y < x);
+    }
+    friend bool operator>=(matrix const& x, matrix const& y)
+    {
+        return !(x < y);
     }
 
     friend matrix operator*(matrix const& lhs, matrix const& rhs)
@@ -95,8 +118,8 @@ int fib(int n)
     if (n < 2)
         return n;
 
-    auto result =
-        power_semigroup(matrix{1, 1, 1, 0}, n - 2, std::multiplies<matrix>());
+    auto result = power_semigroup(
+        matrix{1, 1, 1, 0}, n - 1, std::multiplies<matrix<int>>());
 
     return result.x11;
 }
