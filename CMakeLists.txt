@@ -15,3 +15,7 @@ target_compile_definitions(
     fibonacci_benchmark PRIVATE 
     CATCH_CONFIG_ENABLE_BENCHMARKING
     CATCH_CONFIG_MAIN)
+
+add_executable(fibonacci_instrumented
+    code/fibonacci_instrumented.cpp
+    code/instrumented.cpp)

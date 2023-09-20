@@ -4478,6 +4478,7 @@ namespace Catch {
         virtual std::vector<std::string> const& getSectionsToRun() const = 0;
         virtual Verbosity verbosity() const = 0;
 
+        virtual bool benchmarkSkip() const = 0;
         virtual bool benchmarkNoAnalysis() const = 0;
         virtual int benchmarkSamples() const = 0;
         virtual double benchmarkConfidenceInterval() const = 0;
@@ -5231,6 +5232,7 @@ namespace Catch {
         int abortAfter = -1;
         unsigned int rngSeed = 0;
 
+        bool benchmarkSkip = false;
         bool benchmarkNoAnalysis = false;
         unsigned int benchmarkSamples = 1000;
         double benchmarkConfidenceInterval = 0.95;
@@ -5296,6 +5298,7 @@ namespace Catch {
         int abortAfter() const override;
         bool showInvisibles() const override;
         Verbosity verbosity() const override;
+        bool benchmarkSkip() const override;
         bool benchmarkNoAnalysis() const override;
         int benchmarkSamples() const override;
         double benchmarkConfidenceInterval() const override;
@@ -7287,8 +7290,11 @@ namespace Catch {
             template <typename Fun,
                 typename std::enable_if<!Detail::is_related<Fun, Benchmark>::value, int>::type = 0>
                 Benchmark & operator=(Fun func) {
-                fun = Detail::BenchmarkFunction(func);
-                run();
+                IConfigPtr cfg = getCurrentContext().getConfig();
+                if (!cfg->benchmarkSkip()) {
+                    fun = Detail::BenchmarkFunction(func);
+                    run();
+                }
                 return *this;
             }
 
@@ -9830,6 +9836,9 @@ namespace Catch {
             | Opt( config.benchmarkNoAnalysis )
                 ["--benchmark-no-analysis"]
                 ( "perform only measurements; do not perform any analysis" )
+            | Opt( config.benchmarkSkip )
+                ["--skip-benchmarks"]
+                ( "skip measurements (default: false)" )
 			| Arg( config.testsOrTags, "test name|pattern|tags" )
                 ( "which test or tests to use" );
 
@@ -9937,6 +9946,7 @@ namespace Catch {
     bool Config::showInvisibles() const                { return m_data.showInvisibles; }
     Verbosity Config::verbosity() const                { return m_data.verbosity; }
 
+    bool Config::benchmarkSkip() const                 { return m_data.benchmarkSkip; }
     bool Config::benchmarkNoAnalysis() const           { return m_data.benchmarkNoAnalysis; }
     int Config::benchmarkSamples() const               { return m_data.benchmarkSamples; }
     double Config::benchmarkConfidenceInterval() const { return m_data.benchmarkConfidenceInterval; }
